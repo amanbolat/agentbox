@@ -13,9 +13,8 @@ fi
 sed -i 's/ZSH_THEME=".*"/ZSH_THEME="robbyrussell"/' "$HOME/.zshrc"
 
 append_if_missing 'export PATH="$HOME/.local/bin:$PATH"' "$HOME/.zshrc"
-append_if_missing 'export NVM_DIR="$HOME/.nvm"' "$HOME/.zshrc"
-append_if_missing '[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"' "$HOME/.zshrc"
-append_if_missing '[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"' "$HOME/.zshrc"
+append_if_missing 'export VOLTA_HOME="$HOME/.volta"' "$HOME/.zshrc"
+append_if_missing 'export PATH="$VOLTA_HOME/bin:$PATH"' "$HOME/.zshrc"
 
 append_if_missing 'eval "$(direnv hook bash)"' "$HOME/.bashrc"
 append_if_missing 'eval "$(direnv hook zsh)"' "$HOME/.zshrc"

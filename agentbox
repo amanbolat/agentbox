@@ -23,6 +23,9 @@ readonly DOCKERFILE_PATH="${SCRIPT_DIR}/Dockerfile"
 readonly ENTRYPOINT_PATH="${SCRIPT_DIR}/entrypoint.sh"
 readonly IMAGE_NAME="agentbox:latest"
 readonly CONTAINER_PREFIX="agentbox"
+readonly AGENTBOX_CONFIG_DIR="${HOME}/.agentbox"
+readonly AGENTBOX_CONFIG_PATH="${AGENTBOX_CONFIG_DIR}/config.toml"
+readonly DEFAULT_LANGUAGES_CSV="python,node,java,go"
 
 # Colors for output
 readonly RED='\033[0;31m'
@@ -38,6 +41,139 @@ log_success() { echo -e "${GREEN}✅${NC} $1"; }
 log_warning() { echo -e "${YELLOW}⚠${NC}  $1"; }
 log_error() { echo -e "${RED}❌${NC} $1" >&2; }
 log_build() { echo -e "${CYAN}🔨${NC} $1"; }
+
+trim_whitespace() {
+    local value="$1"
+    value="${value#"${value%%[![:space:]]*}"}"
+    value="${value%"${value##*[![:space:]]}"}"
+    echo "$value"
+}
+
+ensure_agentbox_config() {
+    mkdir -p "$AGENTBOX_CONFIG_DIR"
+
+    if [[ ! -f "$AGENTBOX_CONFIG_PATH" ]]; then
+        cat > "$AGENTBOX_CONFIG_PATH" << 'EOF'
+# AgentBox user configuration
+# Supported languages: python, node, java, go
+# Use "none" via CLI/env to disable optional language toolchains.
+languages = ["python", "node", "java", "go"]
+EOF
+        log_info "Created default config at ${AGENTBOX_CONFIG_PATH}"
+    fi
+}
+
+read_languages_from_config() {
+    local config_file="$1"
+    local line
+
+    [[ -f "$config_file" ]] || return 1
+
+    while IFS= read -r line; do
+        line="${line%%#*}"
+        line=$(trim_whitespace "$line")
+        if [[ "$line" =~ ^languages[[:space:]]*=[[:space:]]*\[(.*)\]$ ]]; then
+            local inner="${BASH_REMATCH[1]}"
+            local values=()
+            local token
+
+            IFS=',' read -ra token_list <<< "$inner"
+            for token in "${token_list[@]}"; do
+                token=$(trim_whitespace "$token")
+                token="${token%\"}"
+                token="${token#\"}"
+                token="${token%\'}"
+                token="${token#\'}"
+                token=$(trim_whitespace "$token")
+                [[ -n "$token" ]] && values+=("$token")
+            done
+
+            if [[ ${#values[@]} -eq 0 ]]; then
+                echo "none"
+                return 0
+            fi
+
+            local IFS=,
+            echo "${values[*]}"
+            return 0
+        fi
+    done < "$config_file"
+
+    return 1
+}
+
+parse_languages_csv() {
+    local raw="$1"
+    local -n parsed_languages_ref=$2
+
+    parsed_languages_ref=()
+    raw=$(trim_whitespace "$raw")
+    raw=$(echo "$raw" | tr '[:upper:]' '[:lower:]')
+
+    if [[ -z "$raw" || "$raw" == "none" ]]; then
+        return 0
+    fi
+
+    local token
+    local cleaned
+    local -A selected=()
+    IFS=',' read -ra token_list <<< "$raw"
+    for token in "${token_list[@]}"; do
+        cleaned=$(trim_whitespace "$token")
+        cleaned="${cleaned%\"}"
+        cleaned="${cleaned#\"}"
+        cleaned="${cleaned%\'}"
+        cleaned="${cleaned#\'}"
+        cleaned=$(trim_whitespace "$cleaned")
+        [[ -z "$cleaned" ]] && continue
+
+        case "$cleaned" in
+            python|node|java|go)
+                selected["$cleaned"]=1
+                ;;
+            none)
+                log_error "Invalid language list: 'none' cannot be combined with other values"
+                return 1
+                ;;
+            *)
+                log_error "Invalid language: $cleaned (supported: python,node,java,go or none)"
+                return 1
+                ;;
+        esac
+    done
+
+    local supported_language
+    for supported_language in python node java go; do
+        if [[ -n "${selected[$supported_language]:-}" ]]; then
+            parsed_languages_ref+=("$supported_language")
+        fi
+    done
+}
+
+languages_to_profile() {
+    local -n languages_ref=$1
+    if [[ ${#languages_ref[@]} -eq 0 ]]; then
+        echo "none"
+        return
+    fi
+
+    local IFS=,
+    echo "${languages_ref[*]}"
+}
+
+language_is_enabled() {
+    local language="$1"
+    shift
+
+    local selected
+    for selected in "$@"; do
+        if [[ "$selected" == "$language" ]]; then
+            return 0
+        fi
+    done
+
+    return 1
+}
 
 # Check if Docker is installed and running
 check_docker() {
@@ -83,10 +219,11 @@ container_is_running() {
 
 # Check if image needs rebuild
 needs_rebuild() {
+    local language_profile="$1"
     # Calculate current Dockerfile and entrypoint hashes
     local dockerfile_hash=$(calculate_hash "$DOCKERFILE_PATH")
     local entrypoint_hash=$(calculate_hash "$ENTRYPOINT_PATH")
-    local combined_hash="${dockerfile_hash}-${entrypoint_hash}"
+    local combined_hash="${dockerfile_hash}-${entrypoint_hash}-${language_profile}"
 
     # Check if image exists
     if ! docker image inspect "$IMAGE_NAME" &> /dev/null; then
@@ -107,11 +244,17 @@ needs_rebuild() {
 
 # Build Docker image
 build_image() {
+    local enable_python="$1"
+    local enable_node="$2"
+    local enable_java="$3"
+    local enable_go="$4"
+    local language_profile="$5"
+
     local dockerfile_hash=$(calculate_hash "$DOCKERFILE_PATH")
     local entrypoint_hash=$(calculate_hash "$ENTRYPOINT_PATH")
-    local combined_hash="${dockerfile_hash}-${entrypoint_hash}"
+    local combined_hash="${dockerfile_hash}-${entrypoint_hash}-${language_profile}"
 
-    log_build "Building AgentBox image (this may take a few minutes on first run)..."
+    log_build "Building AgentBox image (profile: ${language_profile})..."
 
     # Get current user/group IDs
     local user_id=$(id -u)
@@ -123,8 +266,13 @@ build_image() {
         --build-arg USER_ID="${user_id}" \
         --build-arg GROUP_ID="${group_id}" \
         --build-arg USERNAME="agent" \
+        --build-arg ENABLE_PYTHON="${enable_python}" \
+        --build-arg ENABLE_NODE="${enable_node}" \
+        --build-arg ENABLE_JAVA="${enable_java}" \
+        --build-arg ENABLE_GO="${enable_go}" \
         --build-arg BUILD_TIMESTAMP=${build_timestamp} \
         --label "agentbox.hash=${combined_hash}" \
+        --label "agentbox.languages=${language_profile}" \
         --label "agentbox.version=1.0.0" \
         --label "agentbox.built=${build_timestamp}" \
         -t "$IMAGE_NAME" \
@@ -483,6 +631,7 @@ Usage:
 Options:
     -h, --help              Show this help message
     --tool TOOL             Choose tool: claude (default), opencode, or codex
+    --languages LIST        Optional language toolchains: python,node,java,go (or 'none')
     -p PORT                 Forward a port from host to container (can be used multiple times)
     --rebuild               Force rebuild of the image
     --add-dir DIR           Mount additional directory (can be used multiple times)
@@ -506,15 +655,19 @@ Examples:
     agentbox shell                      # Start interactive shell instead of Claude
     agentbox shell --admin              # Start admin shell with sudo access
     agentbox --add-dir ~/1 --add-dir ~/2  # Add dirs with Claude CLI
+    agentbox --languages python,node       # Enable Python + Node extras
+    agentbox --languages none              # Baseline image (AI tools only)
     agentbox python script.py           # Run Python script in container
     agentbox --rebuild                  # Force rebuild image
     agentbox ssh-init                   # Set up SSH for AgentBox
     AGENTBOX_TOOL=codex agentbox        # Use env var to select tool
+    AGENTBOX_LANGUAGES=python,node agentbox  # Set language profile via env var
 
 Containers are ephemeral and automatically removed when you exit.
 Package caches and shell history persist between sessions.
 
 All directories are mounted at their full host paths for symlink/path compatibility.
+Defaults are stored in ~/.agentbox/config.toml (auto-created on first run).
 EOF
 }
 
@@ -563,6 +716,7 @@ main() {
     declare -a ports=()
     local extra_dirs=()
     local tool="${AGENTBOX_TOOL:-claude}"
+    local languages_arg=""
     local ignore_dot_env=false
 
     while [[ $# -gt 0 ]]; do
@@ -602,6 +756,15 @@ main() {
                 tool="$1"
                 shift
                 ;;
+            --languages)
+                shift
+                if [[ -z "${1:-}" ]]; then
+                    log_error "--languages requires a value (python,node,java,go or none)"
+                    exit 1
+                fi
+                languages_arg="$1"
+                shift
+                ;;
             --ignore-dot-env)
                 ignore_dot_env=true
                 shift
@@ -635,6 +798,48 @@ main() {
         exit 1
     fi
 
+    ensure_agentbox_config
+
+    local config_languages=""
+    if ! config_languages=$(read_languages_from_config "$AGENTBOX_CONFIG_PATH"); then
+        config_languages=""
+    fi
+
+    local languages_raw="$DEFAULT_LANGUAGES_CSV"
+    local languages_source="default"
+    if [[ -n "$languages_arg" ]]; then
+        languages_raw="$languages_arg"
+        languages_source="--languages"
+    elif [[ -n "${AGENTBOX_LANGUAGES:-}" ]]; then
+        languages_raw="${AGENTBOX_LANGUAGES}"
+        languages_source="AGENTBOX_LANGUAGES"
+    elif [[ -n "$config_languages" ]]; then
+        languages_raw="$config_languages"
+        languages_source="$AGENTBOX_CONFIG_PATH"
+    fi
+
+    declare -a selected_languages=()
+    if ! parse_languages_csv "$languages_raw" selected_languages; then
+        exit 1
+    fi
+
+    local language_profile
+    language_profile=$(languages_to_profile selected_languages)
+    local enable_python=0
+    local enable_node=0
+    local enable_java=0
+    local enable_go=0
+
+    language_is_enabled "python" "${selected_languages[@]}" && enable_python=1
+    language_is_enabled "node" "${selected_languages[@]}" && enable_node=1
+    language_is_enabled "java" "${selected_languages[@]}" && enable_java=1
+    language_is_enabled "go" "${selected_languages[@]}" && enable_go=1
+
+    log_info "Language profile (${languages_source}): ${language_profile}"
+    if [[ "$enable_node" == "0" ]]; then
+        log_info "Node runtime remains available via Volta for AI tools; Node extras are disabled"
+    fi
+
     # Check Docker
     check_docker
 
@@ -657,14 +862,14 @@ main() {
     fi
 
     # Check if rebuild is needed or forced
-    if [[ "$force_rebuild" == "true" ]] || needs_rebuild; then
+    if [[ "$force_rebuild" == "true" ]] || needs_rebuild "$language_profile"; then
         if [[ "$force_rebuild" == "true" ]]; then
             log_info "Forcing image rebuild..."
         else
-            log_info "Dockerfile or entrypoint changed, rebuilding automatically..."
+            log_info "Dockerfile, entrypoint, or language profile changed, rebuilding automatically..."
         fi
 
-        if ! build_image; then
+        if ! build_image "$enable_python" "$enable_node" "$enable_java" "$enable_go" "$language_profile"; then
             log_error "Build failed!"
             exit 1
         fi

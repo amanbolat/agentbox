@@ -33,6 +33,7 @@ If a requirement is not documented, do not guess. Ask the user for direction.
 ### B) Dockerfile
 
 - Wire the new script in `Dockerfile` in execution order.
+- Gate language install steps behind build-arg profile toggles where applicable.
 - Keep existing cache-busting and layering behavior unchanged unless necessary.
 
 ### C) Documentation

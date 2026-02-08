@@ -2,23 +2,23 @@
 
 set -e
 
-export PATH="$HOME/.opencode/bin:$HOME/.gobrew/current/bin:$HOME/.gobrew/bin:$HOME/.local/bin:$PATH"
-
-if [ -s "$HOME/.nvm/nvm.sh" ]; then
-    export NVM_DIR="$HOME/.nvm"
-    source "$NVM_DIR/nvm.sh"
-fi
+export VOLTA_HOME="$HOME/.volta"
+export PATH="$VOLTA_HOME/bin:$HOME/.gobrew/current/bin:$HOME/.gobrew/bin:$HOME/.local/bin:$PATH"
 
 if [ -f "$HOME/.sdkman/bin/sdkman-init.sh" ]; then
     source "$HOME/.sdkman/bin/sdkman-init.sh"
 fi
 
 if [ -n "$PROJECT_DIR" ] && [ ! -d "$PROJECT_DIR/.venv" ] && [ -f "$PROJECT_DIR/requirements.txt" -o -f "$PROJECT_DIR/pyproject.toml" -o -f "$PROJECT_DIR/setup.py" ]; then
-    echo "🐍 Python project detected, creating virtual environment..."
-    cd "$PROJECT_DIR"
-    uv venv .venv
-    echo "✅ Virtual environment created at .venv/"
-    echo "   Activate with: source .venv/bin/activate"
+    if command -v uv >/dev/null 2>&1; then
+        echo "🐍 Python project detected, creating virtual environment..."
+        cd "$PROJECT_DIR"
+        uv venv .venv
+        echo "✅ Virtual environment created at .venv/"
+        echo "   Activate with: source .venv/bin/activate"
+    else
+        echo "⚠️  Python project detected, but Python tooling is disabled in this image profile"
+    fi
 fi
 
 if [ -d "/home/agent/.ssh" ]; then
@@ -64,7 +64,7 @@ if [ -t 0 ] && [ -t 1 ]; then
     echo "🤖 AgentBox Development Environment"
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo "📁 Project Directory: ${PROJECT_DIR:-unknown}"
-    echo "🐍 Python: $(python3 --version 2>&1 | cut -d' ' -f2) (uv available)"
+    echo "🐍 Python: $(python3 --version 2>/dev/null | cut -d' ' -f2 || echo 'not found') ($(uv --version 2>/dev/null || echo 'uv not found'))"
     echo "🟢 Node.js: $(node --version 2>/dev/null || echo 'not found')"
     echo "☕ Java: $(java -version 2>&1 | head -1 | cut -d'"' -f2 || echo 'not found')"
     echo "🐹 Go: $(go version 2>/dev/null | awk '{print $3}' || echo 'not found') (gobrew available)"

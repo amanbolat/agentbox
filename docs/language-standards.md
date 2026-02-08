@@ -5,7 +5,7 @@ This document defines how AgentBox adds and maintains language toolchains.
 ## Core Rules
 
 - Always install the latest stable release for language runtimes and tooling.
-- Every language must include a version manager (for example `uv`, `nvm`, `sdkman`, `gobrew`, `rustup`).
+- Every language must include a version manager (for example `uv`, `volta`, `sdkman`, `gobrew`, `rustup`).
 - Keep language-specific install logic in a dedicated script under `scripts/install/`.
 - Use official docs as the source of truth and keep references in `extdocs/index.csv`.
 - Do not add CI gates for language policy; use the manual checklist in this document.
@@ -13,10 +13,21 @@ This document defines how AgentBox adds and maintains language toolchains.
 ## Current Baseline (As Implemented)
 
 - Python: `uv` for environment/package management and Python CLI tools.
-- Node.js: `nvm` for version selection; npm globals for JS tooling.
+- Node.js runtime baseline: `volta` (mandatory, required by AI tools).
+- Node.js optional dev tooling: managed by `volta` when `node` language profile is enabled.
 - Java: `sdkman` for JDK/Gradle version management.
 - Go: `gobrew` for stable version selection and switching.
 - Shell: Bash/Zsh plus common utilities.
+
+## Profile Selection
+
+- Supported optional language values: `python,node,java,go`.
+- Profile sources (highest precedence first):
+  1. CLI flag: `--languages`
+  2. Env var: `AGENTBOX_LANGUAGES`
+  3. User config: `~/.agentbox/config.toml` (`languages = [...]`)
+  4. Built-in default: `python,node,java,go`
+- Use `none` to disable all optional language toolchains.
 
 ## Language Profiles
 
@@ -53,4 +64,5 @@ This document defines how AgentBox adds and maintains language toolchains.
 2. Confirm manager and runtime versions print correctly.
 3. Run a minimal language sanity command in a sample project (for example build/test).
 4. Confirm no regression for existing toolchains (Python, Node.js, Java, Go).
-5. Update documentation if command output or workflows changed.
+5. Repeat validation for at least one reduced profile (for example `--languages python,node` or `--languages none`).
+6. Update documentation if command output or workflows changed.

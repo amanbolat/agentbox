@@ -75,7 +75,6 @@ $PROJECT_DIR            # Project directory (mounted at full host path)
 3. **Permission Fixes**: Solve ZSH history permission issue properly
 4. **Debug Mode**: Add verbose logging for troubleshooting
 5. **Config File**: Support `.agentboxrc` for user preferences
-6. **WSL2 Optimizations**: Specific handling for WSL2 environments
 
 ## Known Technical Issues
 
@@ -113,21 +112,3 @@ The `agentbox` script has these key functions:
 - `validate_dir_path()`: Validate directory paths (traversal check, system dirs, existence, duplicates)
 - `run_container()`: Main container execution logic with all mounts and command execution
 - `ssh_setup()`: Initialize ~/.agentbox/ssh/ directory
-
-## Critical Implementation Notes
-
-1. **Never use `-i` flag**: Git commands like `git rebase -i` won't work in non-interactive container context
-
-2. **Path Hashing**: Container names use first 12 chars of SHA256(project_path) - collision risk is negligible
-
-3. **Container Naming**: `agentbox-<hash>` pattern ensures per-project container isolation (separate caches and history, but shared tool authentication)
-
-4. **Shell Mode**: When using `shell` command, execution goes through zsh even for bash (ensures environment is loaded)
-
-5. **Admin Mode**: `--admin` flag doesn't actually grant sudo (would need Dockerfile changes) - currently just shows a message
-
-## File Count
-- Core files: 3 (Dockerfile, entrypoint.sh, agentbox)
-- Documentation: 2 (README.md, DEVELOPMENT_NOTES.md)
-- Other: .gitignore, LICENSE, CLAUDE.md
-- Total: ~8 files (vs ClaudeBox's 20+)

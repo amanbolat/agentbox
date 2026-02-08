@@ -9,7 +9,7 @@ A Docker-based development environment for running agentic coding tools in a mor
 - **Shares project directory with host**: Maps a volume with the source code so that you can see and modify the agent's changes on the host machine - just like if you were running your tool without a container.
 - **Multi-Tool Support**: All agentic coding tools are supported, some built-in, others [via prompt](#adding-tools).
 - **Language Workflow**: Language additions follow standards and prompts (`docs/language-standards.md`, `docs/prompts/add-language.md`).
-- **Unified Development Environment**: Single Docker image with Python, Node.js, Java, Go, and Shell support
+- **Unified Development Environment**: Single Docker image with optional language toolchains and a mandatory Volta baseline for AI tools
 - **Isolated SSH**: Dedicated SSH directory for secure Git operations
 - **Low-Maintenance Philosophy**: Always uses latest LTS tool versions, rebuilds container automatically when necessary
 
@@ -52,7 +52,8 @@ Current policy is:
 - Always use latest stable versions.
 - Always include a version manager for each language.
 - Validate changes with a manual checklist (no CI language policy gates).
-- Go is part of the built-in baseline (`gobrew`); Rust is the next expansion target (`rustup`).
+- Language toolchains are optional via `--languages` / `AGENTBOX_LANGUAGES` / `~/.agentbox/config.toml`.
+- Volta + Node.js runtime remain mandatory baseline for AI tools.
 
 ## Helpful Commands
 
@@ -68,6 +69,15 @@ agentbox --tool codex
 
 # Or set via environment variable
 AGENTBOX_TOOL=codex agentbox
+
+# Choose optional language toolchains for this build profile
+agentbox --languages python,node
+
+# Build baseline image (AI tools only, no optional language toolchains)
+agentbox --languages none
+
+# Set language profile via environment variable
+AGENTBOX_LANGUAGES=python,node agentbox
 
 # Show available commands
 agentbox --help
@@ -87,6 +97,29 @@ agentbox ssh-init
 ```
 
 **Note**: Tool selection via `--tool` flag takes precedence over the `AGENTBOX_TOOL` environment variable.
+
+## Language Profiles and Config
+
+AgentBox supports optional language toolchains using a comma-separated list:
+
+- Supported values: `python,node,java,go`
+- Special value: `none`
+
+Resolution order:
+
+1. `--languages ...`
+2. `AGENTBOX_LANGUAGES`
+3. `~/.agentbox/config.toml`
+4. Built-in default (`python,node,java,go`)
+
+On first run, AgentBox auto-creates `~/.agentbox/config.toml` with defaults:
+
+```toml
+languages = ["python", "node", "java", "go"]
+```
+
+`node` controls optional Node.js developer extras (`typescript`, `eslint`, `prettier`, `yarn`, `pnpm`, etc.).
+Node.js runtime itself remains available via Volta because built-in AI tools depend on it.
 
 ## How It Works
 
@@ -114,13 +147,14 @@ Persistent data (survives container removal):
 The unified Docker image includes:
 
 - **Python**: Latest version with `uv` for package management and Python CLI tooling (`black`, `ruff`, `mypy`, `pytest`, `ipython`)
-- **Node.js**: Latest LTS via NVM with npm, yarn, and pnpm
+- **Node.js Runtime**: Latest LTS via Volta (mandatory baseline)
+- **Node.js Extras**: Optional via `node` profile value (`typescript`, `ts-node`, `eslint`, `prettier`, `nodemon`, `yarn`, `pnpm`)
 - **Java**: Latest LTS via SDKMAN with Gradle
 - **Go**: Latest stable via Gobrew for version management and switching
 - **Shell**: Zsh (default) and Bash with common utilities
-- **Claude CLI**: Pre-installed with per-project authentication
-- **OpenCode**: Pre-installed as an alternative AI coding tool
-- **Codex CLI**: Pre-installed as an alternative AI coding tool
+- **Claude CLI**: Pre-installed via Volta with per-project authentication
+- **OpenCode**: Pre-installed via Volta as an alternative AI coding tool
+- **Codex CLI**: Pre-installed via Volta as an alternative AI coding tool
 
 ## Authenticating to Git or other SCC Providers
 
@@ -241,10 +275,10 @@ agentbox --rebuild
 
 The image automatically rebuilds when:
 - Dockerfile or entrypoint.sh changes
-- Image is older than 48 hours (to get latest tool versions)
+- Language profile changes (`--languages`, `AGENTBOX_LANGUAGES`, or config)
 
 ## Tool / Dependency Versions
-The Dockerfile is configured to pull the latest stable version of each tool (NVM, GitLab CLI, etc.) during the build process. Installation logic is split into `scripts/install/*.sh`, while the Dockerfile orchestrates stage order and caching. This makes maintenance easier and keeps language/tool additions localized.
+The Dockerfile is configured to pull the latest stable version of each tool (Volta, GitLab CLI, etc.) during the build process. Installation logic is split into `scripts/install/*.sh`, while the Dockerfile orchestrates stage order and caching. This makes maintenance easier and keeps language/tool additions localized.
 
 Rebuilding the Docker image may automatically result in newer versions of tools being installed, which could introduce unexpected behavior or breaking changes. If you require specific tool versions, consider pinning them in the install scripts.
 

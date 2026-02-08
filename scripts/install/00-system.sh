@@ -23,7 +23,6 @@ apt-get install -y --no-install-recommends \
     procps psmisc \
     python3-dev python3-pip python3-venv \
     libssl-dev libffi-dev \
-    default-jdk maven gradle \
     ripgrep fd-find
 
 echo "en_US.UTF-8 UTF-8" > /etc/locale.gen

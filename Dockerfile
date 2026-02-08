@@ -33,11 +33,17 @@ USER ${USERNAME}
 WORKDIR /home/${USERNAME}
 
 # Install user-space language toolchains and shell configuration
-ENV NVM_DIR="/home/${USERNAME}/.nvm"
-RUN /tmp/install/20-python.sh
-RUN /tmp/install/30-node.sh
-RUN /tmp/install/40-java.sh
-RUN /tmp/install/60-go.sh
+ARG ENABLE_PYTHON=1
+ARG ENABLE_NODE=1
+ARG ENABLE_JAVA=1
+ARG ENABLE_GO=1
+
+# Volta + Node.js are mandatory baseline for AI tool installation.
+RUN /tmp/install/25-volta.sh
+RUN if [ "${ENABLE_PYTHON}" = "1" ]; then /tmp/install/20-python.sh; fi
+RUN if [ "${ENABLE_NODE}" = "1" ]; then /tmp/install/30-node.sh; fi
+RUN if [ "${ENABLE_JAVA}" = "1" ]; then /tmp/install/40-java.sh; fi
+RUN if [ "${ENABLE_GO}" = "1" ]; then /tmp/install/60-go.sh; fi
 RUN /tmp/install/50-shell.sh
 
 # Switch back to root for entrypoint setup

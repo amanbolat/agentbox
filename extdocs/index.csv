@@ -6,3 +6,6 @@ codex_config_reference,https://developers.openai.com/codex/config-reference,extd
 codex_auth,https://developers.openai.com/codex/auth,extdocs/codex-auth.md,published-2026-02-06,2026-02-08
 gobrew_readme,https://raw.githubusercontent.com/kevincobain2000/gobrew/master/README.md,extdocs/gobrew-readme.md,master@latest,2026-02-08
 go_downloads,https://go.dev/dl/,extdocs/go-downloads.md,go1.25.7-stable,2026-02-08
+volta_getting_started,https://docs.volta.sh/guide/getting-started,extdocs/volta-getting-started.md,latest,2026-02-08
+claude_code_getting_started,https://docs.anthropic.com/en/docs/claude-code/getting-started,extdocs/claude-code-getting-started.md,latest,2026-02-08
+opencode_docs,https://opencode.ai/docs,extdocs/opencode-docs.md,latest,2026-02-08
