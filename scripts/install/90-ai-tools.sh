@@ -9,12 +9,12 @@ export PATH="$VOLTA_HOME/bin:$PATH"
 
 log_step "Installing Claude CLI"
 
-volta install @anthropic-ai/claude-code@latest
+curl -fsSL https://claude.ai/install.sh | bash -s stable
 zsh -i -c 'which claude && claude --version'
 
 log_step "Installing OpenCode"
 
-volta install opencode-ai@latest
+curl -fsSL https://opencode.ai/install | bash
 zsh -i -c 'which opencode && opencode --version'
 
 log_step "Installing Codex CLI"
