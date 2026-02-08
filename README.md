@@ -286,10 +286,9 @@ Rebuilding the Docker image may automatically result in newer versions of tools 
 
 For language additions, follow `docs/language-standards.md` and run the manual validation checklist after each change.
 
-## Support and Contributing
-I make no guarantee to support this project in the future, however the history is positive: I've actively supported it since September 2025. Feel free to create issues and submit PRs. The project is designed to be understandable enough that if you need specific custom changes which we don't want centrally, you can fork or just make them locally for yourself.
+## Contributing
 
-If you do contribute, consider that AgentBox is designed to be simple and maintainable. The value of new features will always be weighed against the added complexity. Try to find the simplest possible way to get things done and control the AI's desire to write such bloated doco.
+If you need a new feature, create a new discussion.
 
 ## License
 
