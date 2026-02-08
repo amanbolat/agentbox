@@ -29,6 +29,7 @@ A Docker-based development environment for running agentic coding tools in a mor
 
 - claude code: built-in
 - opencode: built-in
+- codex cli: built-in
 - any other agents (copilot CLI, Aider, Cursor CLI...): easily add it yourself using the prompt at [docs/prompts/add-tool.md](docs/prompts/add-tool.md).
 
 ### Adding tools
@@ -47,13 +48,16 @@ agentbox
 # Use OpenCode instead of Claude
 agentbox --tool opencode
 
+# Use Codex CLI in YOLO mode
+agentbox --tool codex
+
 # Or set via environment variable
-AGENTBOX_TOOL=opencode agentbox
+AGENTBOX_TOOL=codex agentbox
 
 # Show available commands
 agentbox --help
 
-# Non-agentbox CLI flags are passed through to claude.
+# Non-agentbox CLI flags are passed through to the selected tool.
 # For example, to continue the most recent session
 agentbox -c
 
@@ -87,6 +91,7 @@ Persistent data (survives container removal):
   History: ~/.agentbox/projects/agentbox-<hash>/history/
   Claude: ~/.claude
   OpenCode: ~/.config/opencode and ~/.local/share/opencode
+  Codex: ~/.codex
 ```
 
 ## Languages and Tools
@@ -99,6 +104,7 @@ The unified Docker image includes:
 - **Shell**: Zsh (default) and Bash with common utilities
 - **Claude CLI**: Pre-installed with per-project authentication
 - **OpenCode**: Pre-installed as an alternative AI coding tool
+- **Codex CLI**: Pre-installed as an alternative AI coding tool
 
 ## Authenticating to Git or other SCC Providers
 
@@ -167,7 +173,7 @@ Zsh history is preserved in `~/.agentbox/projects/<container-name>/history`
 
 ### Tool Authentication
 
-Both tools use bind mounts to share authentication across all AgentBox projects:
+Built-in tools use bind mounts to share authentication across all AgentBox projects:
 
 **Claude CLI**:
 - `~/.claude` mounted at `/home/agent/.claude`
@@ -175,6 +181,9 @@ Both tools use bind mounts to share authentication across all AgentBox projects:
 **OpenCode**:
 - Config: `~/.config/opencode` mounted at `/home/agent/.config/opencode`
 - Auth: `~/.local/share/opencode` mounted at `/home/agent/.local/share/opencode`
+
+**Codex CLI**:
+- Config/Auth: `~/.codex` mounted at `/home/agent/.codex`
 
 ## Advanced Usage
 

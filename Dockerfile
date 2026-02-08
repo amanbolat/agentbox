@@ -207,6 +207,8 @@ RUN curl -fsSL https://claude.ai/install.sh | bash -s stable && \
 RUN curl -fsSL https://opencode.ai/install | bash && \
     zsh -i -c 'which opencode && opencode --version'
 
+RUN zsh -i -c 'npm install -g @openai/codex@latest && which codex && codex --version'
+
 # Entrypoint
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 CMD ["/bin/zsh"]

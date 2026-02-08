@@ -1,0 +1,6 @@
+doc_id,source_url,local_path,version_or_tag,fetch_date
+codex_readme,https://raw.githubusercontent.com/openai/codex/main/README.md,extdocs/codex-readme-raw.md,main@latest,2026-02-08
+codex_cli_reference,https://developers.openai.com/codex/cli/reference,extdocs/codex-cli-reference.md,published-2026-02-06,2026-02-08
+codex_config_basic,https://developers.openai.com/codex/config-basic,extdocs/codex-config-basic.md,published-2026-02-06,2026-02-08
+codex_config_reference,https://developers.openai.com/codex/config-reference,extdocs/codex-config-reference.md,published-2026-02-06,2026-02-08
+codex_auth,https://developers.openai.com/codex/auth,extdocs/codex-auth.md,published-2026-02-06,2026-02-08
