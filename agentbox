@@ -68,6 +68,18 @@ get_container_name() {
     echo "${CONTAINER_PREFIX}-${project_hash}"
 }
 
+# Check whether a named container exists (running or stopped)
+container_exists() {
+    local container_name="$1"
+    docker ps -a --format '{{.Names}}' | grep -Fxq "$container_name"
+}
+
+# Check whether a named container is currently running
+container_is_running() {
+    local container_name="$1"
+    docker ps --format '{{.Names}}' | grep -Fxq "$container_name"
+}
+
 
 # Check if image needs rebuild
 needs_rebuild() {
@@ -257,6 +269,30 @@ run_container() {
     fi
 
     local cmd_args=("$@")
+
+    # For shell mode, attach to running project container if present.
+    # If only a stopped container exists with the same name, remove it so run can proceed.
+    if [[ "$shell_mode" == "true" ]]; then
+        if container_is_running "$container_name"; then
+            log_info "Project container already running; attaching to: $container_name"
+            if [[ "$admin_mode" == "true" ]]; then
+                if [[ ${#cmd_args[@]} -gt 0 ]]; then
+                    docker exec -it -w "$PROJECT_DIR" "$container_name" sudo "${cmd_args[@]}"
+                else
+                    docker exec -it -w "$PROJECT_DIR" "$container_name" \
+                        bash -lc "echo '🔒 Admin shell - sudo access enabled' && exec sudo -E -s"
+                fi
+            else
+                docker exec -it -w "$PROJECT_DIR" "$container_name" "${cmd_args[@]:-/bin/zsh}"
+            fi
+            return 0
+        fi
+
+        if container_exists "$container_name"; then
+            log_info "Removing stopped container with project name: $container_name"
+            docker rm "$container_name" >/dev/null
+        fi
+    fi
 
     if [[ "$admin_mode" == "true" ]]; then
         log_success "Starting container for: $PROJECT_NAME (admin shell)"

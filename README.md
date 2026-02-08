@@ -154,6 +154,26 @@ This will:
 2. Copy your known_hosts for host verification
 3. Generate a new Ed25519 key pair (if preferred, delete them and manually place your desired SSH keys in `~/.agentbox/ssh/`).
 
+This SSH setup is for Git/remote authentication from inside the container. AgentBox does not run an SSH server for shell login.
+
+### Accessing the Current Project Container
+
+Container names are deterministic per project path:
+
+```bash
+container_name="agentbox-$(echo -n "$PWD" | sha256sum | cut -c1-12)"
+docker ps --filter "name=^/${container_name}$" --format "table {{.Names}}\t{{.Status}}"
+```
+
+If running, attach a shell directly:
+
+```bash
+docker exec -it -w "$PWD" "$container_name" zsh
+```
+
+If a container with that name is already running, `agentbox shell` now auto-attaches to it for the current project.
+Non-shell flows (`agentbox`, `agentbox --tool ...`) still start a new container and can fail if that project container name is already in use.
+
 ### Environment Variables
 Environment variables are loaded from `.env` files in this order (later overrides earlier):
 1. `~/.agentbox/.env` (global)
