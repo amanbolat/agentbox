@@ -8,6 +8,7 @@ A Docker-based development environment for running agentic coding tools in a mor
 
 - **Shares project directory with host**: Maps a volume with the source code so that you can see and modify the agent's changes on the host machine - just like if you were running your tool without a container.
 - **Multi-Tool Support**: All agentic coding tools are supported, some built-in, others [via prompt](#adding-tools).
+- **Language Workflow**: Language additions follow standards and prompts (`docs/language-standards.md`, `docs/prompts/add-language.md`).
 - **Unified Development Environment**: Single Docker image with Python, Node.js, Java, and Shell support
 - **Isolated SSH**: Dedicated SSH directory for secure Git operations
 - **Low-Maintenance Philosophy**: Always uses latest LTS tool versions, rebuilds container automatically when necessary
@@ -38,6 +39,20 @@ Start your coding agent in the agentbox directory and issue this (example) promp
 > Add support for Copilot CLI to this project using the instructions at @docs/prompts/add-tool.md.
 
 Then you can go to your project directory and run (e.g.) `agentbox --tool copilot`. Thanks to [Felix Medam](https://github.com/SputnikTea) for this very cool idea.
+
+### Adding languages
+
+Language additions are standardized:
+
+- Rules and baseline profiles: `docs/language-standards.md`
+- Prompt workflow: `docs/prompts/add-language.md`
+
+Current policy is:
+
+- Always use latest stable versions.
+- Always include a version manager for each language.
+- Validate changes with a manual checklist (no CI language policy gates).
+- Go is the first expansion target (`gobrew`); Rust is next (`rustup`).
 
 ## Helpful Commands
 
@@ -209,6 +224,8 @@ The image automatically rebuilds when:
 The Dockerfile is configured to pull the latest stable version of each tool (NVM, GitLab CLI, etc.) during the build process. Installation logic is split into `scripts/install/*.sh`, while the Dockerfile orchestrates stage order and caching. This makes maintenance easier and keeps language/tool additions localized.
 
 Rebuilding the Docker image may automatically result in newer versions of tools being installed, which could introduce unexpected behavior or breaking changes. If you require specific tool versions, consider pinning them in the install scripts.
+
+For language additions, follow `docs/language-standards.md` and run the manual validation checklist after each change.
 
 ## Alternatives
 ### Anthropic DevContainer

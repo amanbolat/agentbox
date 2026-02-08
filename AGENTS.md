@@ -8,6 +8,8 @@ AgentBox is intentionally small and centered on three runtime files:
 
 Supporting paths:
 - `docs/prompts/add-tool.md`: workflow for adding support for new CLI agents.
+- `docs/prompts/add-language.md`: workflow for adding support for new language toolchains.
+- `docs/language-standards.md`: source of truth for language policies and validation checklist.
 - `.github/workflows/`: GitHub Actions for Claude automation and PR review.
 - `media/`: logos and branding assets.
 
@@ -32,3 +34,10 @@ Supporting paths:
 - If `fetch_date` is older than 30 days, re-fetch documentation.
 - The freshness check must use the current date from the `date` command.
 - Fetch documentation in markdown format via Jina AI Reader API using `curl` (pattern: `https://r.jina.ai/http://...`).
+
+## Language Workflow
+- Language additions must follow `docs/language-standards.md` and `docs/prompts/add-language.md`.
+- Always install latest stable runtime/tooling and include a language version manager (for example `uv`, `nvm`, `sdkman`, `gobrew`, `rustup`).
+- Keep one dedicated install script per language in `scripts/install/`.
+- Do not add CI checks for language policy; use the documented manual checklist.
+- Go is the first language expansion target and Rust is next.
