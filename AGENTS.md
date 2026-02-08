@@ -11,15 +11,6 @@ Supporting paths:
 - `.github/workflows/`: GitHub Actions for Claude automation and PR review.
 - `media/`: logos and branding assets.
 
-## Build, Test, and Development Commands
-- `chmod +x agentbox`: make the launcher executable.
-- `./agentbox --help`: view CLI options and usage without starting Docker.
-- `./agentbox`: start Claude Code in the container for the current project.
-- `./agentbox --tool opencode`: run OpenCode instead of Claude.
-- `./agentbox shell`: open an interactive shell in the container.
-- `./agentbox --rebuild`: force image rebuild after Dockerfile/entrypoint changes.
-- `./agentbox ssh-init`: create isolated SSH keys under `~/.agentbox/ssh/`.
-
 ## Coding Style & Naming Conventions
 - Target Bash 4+ and keep strict mode (`set -euo pipefail`) in scripts.
 - Use 4-space indentation; prefer clear, short functions over deep nesting.
@@ -27,14 +18,17 @@ Supporting paths:
 - Quote variable expansions unless intentional word splitting is required.
 - Keep comments minimal and purposeful (explain non-obvious “why,” not obvious “what”).
 
-## Testing Guidelines
-There is no formal automated test suite in this repository today; use smoke tests for changes:
-- `bash -n agentbox entrypoint.sh` for syntax validation.
-- `./agentbox --help` for CLI parsing checks.
-- For runtime changes, verify at least one container start path (for example `./agentbox shell`) and any touched flags (`--add-dir`, `--tool`, `--ignore-dot-env`).
-
 ## Commit & Pull Request Guidelines
 - Follow concise, imperative commit messages. History uses both plain imperative style and Conventional Commit prefixes (for example `feat:`, `fix:`, `refactor:`).
 - Keep commits focused and atomic; avoid mixing refactors with behavior changes.
 - PRs should include: problem statement, summary of behavioral changes, manual test steps/outputs, and documentation updates when flags or workflows change.
 - Link related issues and call out breaking changes explicitly.
+
+## Documentation & Dependency Freshness
+- Always use the latest stable version of libraries/tools and the corresponding official documentation.
+- Keep fetched external docs under `extdocs/` and track metadata in `extdocs/index.csv`.
+- `extdocs/index.csv` must include, at minimum: `doc_id`, `source_url`, `local_path`, `version_or_tag`, and `fetch_date`.
+- Before using docs for implementation, verify freshness with `scripts/sync_extdocs.sh`.
+- If `fetch_date` is older than 30 days, re-fetch documentation.
+- The freshness check must use the current date from the `date` command.
+- Fetch documentation in markdown format via Jina AI Reader API using `curl` (pattern: `https://r.jina.ai/http://...`).
