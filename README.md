@@ -167,7 +167,7 @@ The `gh` tool is included in the image and can be used for all GitHub operations
 - Visit this link to configure a [fine-grained access-token](https://github.com/settings/personal-access-tokens/new?name=MyRepo-AI&description=For%20AI%20Agent%20Usage&contents=write&pull_requests=write&issues=write) with a sensible set of permissions predefined.
 - On that page, restrict the token to the project repository.
 - Create a .env file at the root of your project repository with entry `GH_TOKEN=<token>`
-- Add some instructions to the CLAUDE.md file, telling it to use the `gh` tool for Git operations. You can see a slightly more complicated example in this repo, there is a sub-agent for git operations in .claude/agents and instructions in CLAUDE.md to remember to use agents.
+- Add instructions to your repository agent guidance (for example `AGENTS.md`) to prefer the `gh` tool for GitHub operations when using access tokens.
 
 You or your agent should convert ssh git remotes to https, ssh remotes don't work with tokens.
 
