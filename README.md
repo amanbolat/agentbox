@@ -4,6 +4,10 @@
 
 A Docker-based development environment for running agentic coding tools in a more safe, isolated fashion. This makes it less dangerous to give your agent full permissions (YOLO mode / `--dangerously-skip-permissions`), which is, in my opinion, the only way to use AI agents.
 
+## Fork Origin
+
+This repository is a fork of [`fletchgqc/agentbox`](https://github.com/fletchgqc/agentbox) and continues development with project-specific changes.
+
 ## Features
 
 - **Shares project directory with host**: Maps a volume with the source code so that you can see and modify the agent's changes on the host machine - just like if you were running your tool without a container.
@@ -302,3 +306,9 @@ AgentBox began as a simplified replacement for [ClaudeBox](https://github.com/Rc
 I make no guarantee to support this project in the future, however the history is positive: I've actively supported it since September 2025. Feel free to create issues and submit PRs. The project is designed to be understandable enough that if you need specific custom changes which we don't want centrally, you can fork or just make them locally for yourself.
 
 If you do contribute, consider that AgentBox is designed to be simple and maintainable. The value of new features will always be weighed against the added complexity. Try to find the simplest possible way to get things done and control the AI's desire to write such bloated doco.
+
+## License
+
+This project is licensed under the Apache License 2.0. See `LICENSE`.
+
+As a fork, it preserves upstream attribution to [`fletchgqc/agentbox`](https://github.com/fletchgqc/agentbox) and applies Apache-2.0 terms to ongoing modifications in this repository.
