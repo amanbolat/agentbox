@@ -1,5 +1,3 @@
-![AgentBox Logo](media/logo-image-only-150.png)
-
 # AgentBox
 
 A Docker-based development environment for running agentic coding tools in a more safe, isolated fashion. This makes it less dangerous to give your agent full permissions (YOLO mode / `--dangerously-skip-permissions`), which is, in my opinion, the only way to use AI agents.
