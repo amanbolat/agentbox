@@ -37,6 +37,7 @@ ENV NVM_DIR="/home/${USERNAME}/.nvm"
 RUN /tmp/install/20-python.sh
 RUN /tmp/install/30-node.sh
 RUN /tmp/install/40-java.sh
+RUN /tmp/install/60-go.sh
 RUN /tmp/install/50-shell.sh
 
 # Switch back to root for entrypoint setup

@@ -9,7 +9,7 @@ A Docker-based development environment for running agentic coding tools in a mor
 - **Shares project directory with host**: Maps a volume with the source code so that you can see and modify the agent's changes on the host machine - just like if you were running your tool without a container.
 - **Multi-Tool Support**: All agentic coding tools are supported, some built-in, others [via prompt](#adding-tools).
 - **Language Workflow**: Language additions follow standards and prompts (`docs/language-standards.md`, `docs/prompts/add-language.md`).
-- **Unified Development Environment**: Single Docker image with Python, Node.js, Java, and Shell support
+- **Unified Development Environment**: Single Docker image with Python, Node.js, Java, Go, and Shell support
 - **Isolated SSH**: Dedicated SSH directory for secure Git operations
 - **Low-Maintenance Philosophy**: Always uses latest LTS tool versions, rebuilds container automatically when necessary
 
@@ -52,7 +52,7 @@ Current policy is:
 - Always use latest stable versions.
 - Always include a version manager for each language.
 - Validate changes with a manual checklist (no CI language policy gates).
-- Go is the first expansion target (`gobrew`); Rust is next (`rustup`).
+- Go is part of the built-in baseline (`gobrew`); Rust is the next expansion target (`rustup`).
 
 ## Helpful Commands
 
@@ -116,6 +116,7 @@ The unified Docker image includes:
 - **Python**: Latest version with `uv` for package management and Python CLI tooling (`black`, `ruff`, `mypy`, `pytest`, `ipython`)
 - **Node.js**: Latest LTS via NVM with npm, yarn, and pnpm
 - **Java**: Latest LTS via SDKMAN with Gradle
+- **Go**: Latest stable via Gobrew for version management and switching
 - **Shell**: Zsh (default) and Bash with common utilities
 - **Claude CLI**: Pre-installed with per-project authentication
 - **OpenCode**: Pre-installed as an alternative AI coding tool
@@ -182,6 +183,8 @@ Package manager caches are stored in `~/.cache/agentbox/<container-name>/`:
 - pip packages: `~/.cache/agentbox/<container-name>/pip`
 - Maven artifacts: `~/.cache/agentbox/<container-name>/maven`
 - Gradle cache: `~/.cache/agentbox/<container-name>/gradle`
+- Go build cache: `~/.cache/agentbox/<container-name>/go-build`
+- Go module cache: `~/.cache/agentbox/<container-name>/go-mod`
 
 ### Shell History
 Zsh history is preserved in `~/.agentbox/projects/<container-name>/history`

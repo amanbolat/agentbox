@@ -2,7 +2,7 @@
 
 set -e
 
-export PATH="$HOME/.opencode/bin:$HOME/.local/bin:$PATH"
+export PATH="$HOME/.opencode/bin:$HOME/.gobrew/current/bin:$HOME/.gobrew/bin:$HOME/.local/bin:$PATH"
 
 if [ -s "$HOME/.nvm/nvm.sh" ]; then
     export NVM_DIR="$HOME/.nvm"
@@ -67,6 +67,7 @@ if [ -t 0 ] && [ -t 1 ]; then
     echo "🐍 Python: $(python3 --version 2>&1 | cut -d' ' -f2) (uv available)"
     echo "🟢 Node.js: $(node --version 2>/dev/null || echo 'not found')"
     echo "☕ Java: $(java -version 2>&1 | head -1 | cut -d'"' -f2 || echo 'not found')"
+    echo "🐹 Go: $(go version 2>/dev/null | awk '{print $3}' || echo 'not found') (gobrew available)"
     if [ "$TOOL" = "opencode" ]; then
         echo "🤖 OpenCode: $(opencode --version 2>/dev/null || echo 'not found - check installation')"
     elif [ "$TOOL" = "codex" ]; then

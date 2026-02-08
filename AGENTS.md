@@ -40,4 +40,4 @@ Supporting paths:
 - Always install latest stable runtime/tooling and include a language version manager (for example `uv`, `nvm`, `sdkman`, `gobrew`, `rustup`).
 - Keep one dedicated install script per language in `scripts/install/`.
 - Do not add CI checks for language policy; use the documented manual checklist.
-- Go is the first language expansion target and Rust is next.
+- Go is a built-in language baseline (`gobrew`) and Rust is the next expansion target.
