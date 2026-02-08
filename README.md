@@ -98,7 +98,7 @@ Persistent data (survives container removal):
 
 The unified Docker image includes:
 
-- **Python**: Latest version with `uv` for fast package management
+- **Python**: Latest version with `uv` for package management and Python CLI tooling (`black`, `ruff`, `mypy`, `pytest`, `ipython`)
 - **Node.js**: Latest LTS via NVM with npm, yarn, and pnpm
 - **Java**: Latest LTS via SDKMAN with Gradle
 - **Shell**: Zsh (default) and Bash with common utilities
@@ -206,7 +206,9 @@ The image automatically rebuilds when:
 - Image is older than 48 hours (to get latest tool versions)
 
 ## Tool / Dependency Versions
-The Dockerfile is configured to pull the latest stable version of each tool (NVM, GitLab CLI, etc.) during the build process. This makes maintenance easy and ensures that we always use current software. It also means that rebuilding the Docker image may automatically result in newer versions of tools being installed, which could introduce unexpected behavior or breaking changes. If you require specific tool versions, consider pinning them in the Dockerfile.
+The Dockerfile is configured to pull the latest stable version of each tool (NVM, GitLab CLI, etc.) during the build process. Installation logic is split into `scripts/install/*.sh`, while the Dockerfile orchestrates stage order and caching. This makes maintenance easier and keeps language/tool additions localized.
+
+Rebuilding the Docker image may automatically result in newer versions of tools being installed, which could introduce unexpected behavior or breaking changes. If you require specific tool versions, consider pinning them in the install scripts.
 
 ## Alternatives
 ### Anthropic DevContainer
