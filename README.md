@@ -288,20 +288,6 @@ Rebuilding the Docker image may automatically result in newer versions of tools 
 
 For language additions, follow `docs/language-standards.md` and run the manual validation checklist after each change.
 
-## Alternatives
-### Anthropic DevContainer
-Anthropic offers a [devcontainer](https://github.com/anthropics/claude-code/tree/main/.devcontainer) which achieves a similar goal. If you like devcontainers, that's a good option. Unfortunately, I find that devcontainers sometimes have weird bugs, problematic support in IntelliJ/Mac, or they are just more cumbersome to use (try switching to a recent project with a shortcut, for example). I don't want to force people to use a devcontainer if what they really want is safe YOLO-mode isolation - the simpler solution to the problem is just Docker, hence, this project.
-
-### Comparison with ClaudeBox
-AgentBox began as a simplified replacement for [ClaudeBox](https://github.com/RchGrav/claudebox). I liked the ClaudeBox project, but its complexity caused a lot of bugs and I found myself maintaning my own fork with my not-yet-merged PRs. It became easier for me to build something leaner for my own needs. Comparison:
-
-| Feature | AgentBox | ClaudeBox |
-|---------|----------|-----------|
-| Files | 3 core files | 20+ files |
-| Profiles | Single unified image | 20+ language profiles |
-| Container Management | Simple per-project | Advanced slot system |
-| Setup | Automatic | Manual configuration |
-
 ## Support and Contributing
 I make no guarantee to support this project in the future, however the history is positive: I've actively supported it since September 2025. Feel free to create issues and submit PRs. The project is designed to be understandable enough that if you need specific custom changes which we don't want centrally, you can fork or just make them locally for yourself.
 
